@@ -5,8 +5,12 @@ import HealthMetricCard from './HealthMetricCard';
 import HealthChart from './HealthChart';
 import ForecastSection from './ForecastSection';
 import InsightsSection from './InsightsSection';
+import { modernColorSchemes } from '../styles/colorSchemes';
 
 const Dashboard: React.FC = () => {
+  const currentScheme = 'oceanic'; // You can change this to any scheme
+  const colors = modernColorSchemes[currentScheme];
+
   // Get the most recent health data
   const latestData = mockHealthData[mockHealthData.length - 1];
   
@@ -60,16 +64,20 @@ const Dashboard: React.FC = () => {
       </div>
       
       {/* Health Trends Chart */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+      <div className={`${colors.card} rounded-lg shadow-lg p-6 mb-8 border ${colors.border} ${colors.cardHover} transition-all duration-300`}>
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Health Trends</h2>
         <HealthChart data={mockHealthData} />
       </div>
       
       {/* Health Forecast */}
-      <ForecastSection forecasts={mockHealthForecasts} />
+      <div className={`${colors.card} rounded-lg shadow-lg p-6 mb-8 border ${colors.border} ${colors.cardHover} transition-all duration-300`}>
+        <ForecastSection forecasts={mockHealthForecasts} />
+      </div>
       
       {/* Health Insights */}
-      <InsightsSection />
+      <div className={`${colors.card} rounded-lg shadow-lg p-6 border ${colors.border} ${colors.cardHover} transition-all duration-300`}>
+        <InsightsSection />
+      </div>
     </div>
   );
 };
