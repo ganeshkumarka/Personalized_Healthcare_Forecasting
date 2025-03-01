@@ -1,5 +1,6 @@
-import { HealthData, HealthForecast, HealthInsight, UserProfile, Device, TrendData } from '../types';
-import { addDays, format, subDays, subMonths } from 'date-fns';
+import { HealthData, HealthForecast, HealthInsight, UserProfile, Device, TrendData, Notification, UserSettings } from '../types';
+import { addDays, format, subDays, subMonths, subHours, } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid';
 
 // Generate dates for the past 7 days
 const generatePastDates = (days: number): string[] => {
@@ -140,6 +141,16 @@ export const mockUserProfile: UserProfile = {
   age: 32,
   weight: 70, // kg
   height: 175, // cm
+  gender: 'male',
+  birthdate: '1993-05-15',
+  bloodType: 'O+',
+  medicalConditions: ['Asthma', 'Seasonal allergies'],
+  allergies: ['Peanuts', 'Penicillin'],
+  emergencyContact: {
+    name: 'Sarah Johnson',
+    relationship: 'Spouse',
+    phone: '555-123-4567'
+  },
   goals: {
     dailySteps: 10000,
     sleepHours: 8,
@@ -258,3 +269,90 @@ export const mockMonthlyAverages = Array.from({ length: 6 }).map((_, index) => {
     healthScore: Math.floor(65 + 20 * improvementFactor),
   };
 }).reverse(); // Reverse to show oldest to newest
+
+// Generate mock notifications
+export const mockNotifications: Notification[] = [
+  {
+    id: uuidv4(),
+    title: 'Goal Achieved!',
+    message: 'Congratulations! You reached your daily step goal of 10,000 steps.',
+    type: 'success',
+    read: false,
+    date: subHours(new Date(), 2).toISOString(),
+    link: '/trends'
+  },
+  {
+    id: uuidv4(),
+    title: 'Device Battery Low',
+    message: 'Your Apple Watch battery is below 20%. Please charge it soon.',
+    type: 'warning',
+    read: false,
+    date: subHours(new Date(), 5).toISOString(),
+    link: '/devices'
+  },
+  {
+    id: uuidv4(),
+    title: 'New Insight Available',
+    message: 'We\'ve analyzed your sleep patterns and have a new recommendation for you.',
+    type: 'info',
+    read: true,
+    date: subDays(new Date(), 1).toISOString(),
+    link: '/insights'
+  },
+  {
+    id: uuidv4(),
+    title: 'Stress Level Alert',
+    message: 'Your stress level has been elevated for the past 3 days. Consider some relaxation techniques.',
+    type: 'alert',
+    read: true,
+    date: subDays(new Date(), 2).toISOString(),
+    link: '/insights'
+  },
+  {
+    id: uuidv4(),
+    title: 'Weekly Report Ready',
+    message: 'Your weekly health summary is now available. Check it out to see your progress!',
+    type: 'info',
+    read: true,
+    date: subDays(new Date(), 3).toISOString()
+  },
+  {
+    id: uuidv4(),
+    title: 'Device Disconnected',
+    message: 'Your Oura Ring has been disconnected for 5 days. Reconnect it to continue tracking your health.',
+    type: 'warning',
+    read: true,
+    date: subDays(new Date(), 4).toISOString(),
+    link: '/devices'
+  },
+  {
+    id: uuidv4(),
+    title: 'Heart Rate Anomaly',
+    message: 'We detected an unusual heart rate pattern yesterday. Consider consulting with your doctor if this continues.',
+    type: 'alert',
+    read: true,
+    date: subDays(new Date(), 1).toISOString()
+  }
+];
+
+// Default user settings
+export const defaultUserSettings: UserSettings = {
+  notifications: {
+    email: true,
+    push: true,
+    sms: false
+  },
+  privacy: {
+    shareData: false,
+    anonymousAnalytics: true
+  },
+  display: {
+    darkMode: false,
+    compactView: false
+  },
+  units: {
+    distance: 'km',
+    weight: 'kg',
+    temperature: 'c'
+  }
+};
