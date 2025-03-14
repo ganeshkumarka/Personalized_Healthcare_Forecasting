@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { X, Bell, Lock, Monitor, Ruler } from 'lucide-react';
+import { X, Bell, Lock, Monitor, Ruler, Palette } from 'lucide-react';
 import { UserSettings } from '../types';
+import { modernColorSchemes, ColorScheme } from '../styles/colorSchemes';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -10,7 +11,7 @@ interface SettingsModalProps {
 const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
   const { userSettings, updateUserSettings } = useAuth();
   const [settings, setSettings] = useState<UserSettings>(userSettings);
-  const [activeTab, setActiveTab] = useState<'notifications' | 'privacy' | 'display' | 'units'>('notifications');
+  const [activeTab, setActiveTab] = useState<'notifications' | 'privacy' | 'display' | 'units' | 'theme'>('notifications');
   
   const handleSave = () => {
     updateUserSettings(settings);
@@ -33,6 +34,16 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
       units: {
         ...settings.units,
         [unit]: value
+      }
+    });
+  };
+
+  const handleThemeChange = (theme: ColorScheme) => {
+    setSettings({
+      ...settings,
+      display: {
+        ...settings.display,
+        theme
       }
     });
   };
@@ -86,6 +97,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
               >
                 <Monitor className="h-4 w-4 mr-2" />
                 Display
+              </button>
+              <button
+                onClick={() => setActiveTab('theme')}
+                className={`flex items-center px-3 py-2 text-sm font-medium rounded-md w-full ${
+                  activeTab === 'theme' 
+                    ? 'bg-blue-50 text-blue-700' 
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <Palette className="h-4 w-4 mr-2" />
+                Theme
               </button>
               <button
                 onClick={() => setActiveTab('units')}
@@ -233,6 +255,34 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                     </label>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'theme' && (
+              <div>
+                <h4 className="text-lg font-medium text-gray-900 mb-4">Theme Settings</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  {(Object.keys(modernColorSchemes) as ColorScheme[]).map((theme) => (
+                    <button
+                      key={theme}
+                      onClick={() => handleThemeChange(theme)}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        settings.display.theme === theme
+                          ? 'border-blue-500 shadow-md'
+                          : 'border-gray-200'
+                      } ${modernColorSchemes[theme].background}`}
+                    >
+                      <div className="h-24 rounded-md mb-2 flex flex-col justify-between p-3">
+                        <div className={`h-6 w-full rounded-md ${modernColorSchemes[theme].card}`}></div>
+                        <div className={`h-6 w-2/3 rounded-md ${modernColorSchemes[theme].card}`}></div>
+                      </div>
+                      <p className="text-center capitalize font-medium">{theme}</p>
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-4 text-sm text-gray-500">
+                  Select a theme to customize the look and feel of your dashboard.
+                </p>
               </div>
             )}
             

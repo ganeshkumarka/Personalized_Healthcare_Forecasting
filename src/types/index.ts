@@ -1,3 +1,5 @@
+import { ColorScheme } from '../styles/colorSchemes';
+
 export interface HealthData {
   id: number;
   date: string;
@@ -108,6 +110,7 @@ export interface UserSettings {
   display: {
     darkMode: boolean;
     compactView: boolean;
+    theme: ColorScheme;
   };
   units: {
     distance: 'km' | 'mi';

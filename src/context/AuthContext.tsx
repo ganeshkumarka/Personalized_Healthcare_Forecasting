@@ -55,6 +55,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      const usersJson = localStorage.getItem('users');
+      const users = usersJson ? JSON.parse(usersJson) : [];
+      
+      if (users.length === 0) {
+        // Create a demo user
+        const demoUser: User = {
+          id: uuidv4(),
+          email: 'demo@example.com',
+          password: 'password',
+          name: 'Demo User',
+          profile: mockUserProfile
+        };
+        
+        // Store the demo user
+        localStorage.setItem('users', JSON.stringify([demoUser]));
+        
+        // Auto-login for demo purposes
+        setCurrentUser(demoUser);
+        setIsAuthenticated(true);
+        localStorage.setItem('currentUser', JSON.stringify(demoUser));
+      }
+    }
+  }, [isAuthenticated]);
+
   const login = async (email: string, password: string): Promise<boolean> => {
     // Get users from local storage
     const usersJson = localStorage.getItem('users');
