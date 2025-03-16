@@ -115,7 +115,7 @@ const TrendsPage: React.FC = () => {
   
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Health Trends</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-6"></h1>
       
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">Health Trends</h1>
