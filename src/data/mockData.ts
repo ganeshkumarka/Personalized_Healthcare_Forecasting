@@ -1,5 +1,6 @@
-import { HealthData, HealthForecast, HealthInsight, UserProfile, Device, TrendData } from '../types';
-import { addDays, format, subDays, subMonths } from 'date-fns';
+import { HealthData, HealthForecast, HealthInsight, UserProfile, Device, TrendData, Notification, UserSettings } from '../types';
+import { addDays, format, subDays, subMonths, subHours } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid';
 
 // Generate dates for the past 7 days
 const generatePastDates = (days: number): string[] => {
@@ -28,29 +29,77 @@ export const mockHealthData: HealthData[] = generatePastDates(7).map((date, inde
   stressLevel: Math.floor(Math.random() * 5) + 1, // 1-5 stress level
 }));
 
+// Enhanced ML-based forecasting model
+function predictHealthMetrics(historicalData: HealthData[], dayOffset: number) {
+  // Use the last 7 days of data to identify trends
+  const recentData = historicalData.slice(-7);
+  
+  // Calculate moving averages and trends
+  const avgSteps = recentData.reduce((sum, day) => sum + day.steps, 0) / recentData.length;
+  const avgHeartRate = recentData.reduce((sum, day) => sum + day.heartRate, 0) / recentData.length;
+  const avgSleepHours = recentData.reduce((sum, day) => sum + day.sleepHours, 0) / recentData.length;
+  const avgCalories = recentData.reduce((sum, day) => sum + day.caloriesBurned, 0) / recentData.length;
+  const avgStressLevel = recentData.reduce((sum, day) => sum + day.stressLevel, 0) / recentData.length;
+  
+  // Calculate trend slopes (simple linear regression approximation)
+  const stepsSlope = (recentData[recentData.length-1].steps - recentData[0].steps) / (recentData.length - 1);
+  const hrSlope = (recentData[recentData.length-1].heartRate - recentData[0].heartRate) / (recentData.length - 1);
+  const sleepSlope = (recentData[recentData.length-1].sleepHours - recentData[0].sleepHours) / (recentData.length - 1);
+  const caloriesSlope = (recentData[recentData.length-1].caloriesBurned - recentData[0].caloriesBurned) / (recentData.length - 1);
+  const stressSlope = (recentData[recentData.length-1].stressLevel - recentData[0].stressLevel) / (recentData.length - 1);
+  
+  // Apply time decay to the trend (trends have less impact as we predict further in the future)
+  const timeDecay = Math.exp(-0.1 * dayOffset);
+  
+  // Calculate the forecasted values with seasonal adjustments
+  // Weekend effect: more steps on weekends, better sleep, less stress
+  const forecastDate = addDays(new Date(), dayOffset);
+  const dayOfWeek = forecastDate.getDay(); // 0 = Sunday, 6 = Saturday
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  
+  const weekendStepsFactor = isWeekend ? 1.15 : 0.95;
+  const weekendSleepFactor = isWeekend ? 1.1 : 0.95;
+  const weekendStressFactor = isWeekend ? 0.8 : 1.1;
+  
+  // Combine the base average, trend, and seasonal factors for final prediction
+  const steps = Math.round((avgSteps + stepsSlope * dayOffset * timeDecay) * weekendStepsFactor);
+  const heartRate = Math.round(avgHeartRate + hrSlope * dayOffset * timeDecay);
+  const sleepHours = Math.min(10, Math.max(4, (avgSleepHours + sleepSlope * dayOffset * timeDecay) * weekendSleepFactor));
+  const caloriesBurned = Math.round(avgCalories + caloriesSlope * dayOffset * timeDecay);
+  const stressLevel = Math.min(5, Math.max(1, (avgStressLevel + stressSlope * dayOffset * timeDecay) * weekendStressFactor));
+  
+  // Add some randomness to make predictions realistic
+  const randomizer = (base: number, variance: number) => base + (Math.random() * 2 - 1) * variance;
+  
+  return {
+    steps: Math.round(randomizer(steps, 500)),
+    hr: Math.round(randomizer(heartRate, 3)),
+    sleep: Number(randomizer(sleepHours, 0.5).toFixed(1)),
+    calories: Math.round(randomizer(caloriesBurned, 100)),
+    stress: Math.round(randomizer(stressLevel, 0.5))
+  };
+}
+
 // Generate mock health forecasts for the next 7 days
-export const mockHealthForecasts: HealthForecast[] = generateFutureDates(7).map((date) => {
-  const baseSteps = Math.floor(Math.random() * 5000) + 5000;
-  const baseHeartRate = Math.floor(Math.random() * 20) + 60;
-  const baseSleepHours = Math.floor(Math.random() * 3) + 6;
-  const baseCaloriesBurned = Math.floor(Math.random() * 500) + 1500;
-  const baseStressLevel = Math.floor(Math.random() * 5) + 1;
+export const mockHealthForecasts: HealthForecast[] = generateFutureDates(7).map((date, index) => {
+  // Use our enhanced ML model
+  const { steps, hr, sleep, calories, stress } = predictHealthMetrics(mockHealthData, index + 1);
   
   // Calculate a health score based on the metrics (0-100)
   const healthScore = Math.floor(
-    (baseSteps / 10000) * 25 + 
-    ((80 - baseHeartRate) / 20) * 25 + 
-    (baseSleepHours / 9) * 25 + 
-    ((5 - baseStressLevel) / 5) * 25
+    (steps / 10000) * 25 +              // Steps component (25% of total)
+    ((80 - hr) / 20) * 25 +             // Heart rate component (25% of total)
+    (sleep / 9) * 25 +                  // Sleep component (25% of total)
+    ((5 - stress) / 5) * 25             // Stress component (25% of total)
   );
   
   return {
     date,
-    predictedSteps: baseSteps,
-    predictedHeartRate: baseHeartRate,
-    predictedSleepHours: baseSleepHours,
-    predictedCaloriesBurned: baseCaloriesBurned,
-    predictedStressLevel: baseStressLevel,
+    predictedSteps: steps,
+    predictedHeartRate: hr,
+    predictedSleepHours: sleep,
+    predictedCaloriesBurned: calories,
+    predictedStressLevel: stress,
     healthScore: Math.min(100, Math.max(0, healthScore)),
   };
 });
@@ -140,6 +189,16 @@ export const mockUserProfile: UserProfile = {
   age: 32,
   weight: 70, // kg
   height: 175, // cm
+  gender: 'male',
+  birthdate: '1993-05-15',
+  bloodType: 'O+',
+  medicalConditions: ['Asthma', 'Seasonal allergies'],
+  allergies: ['Peanuts', 'Penicillin'],
+  emergencyContact: {
+    name: 'Sarah Johnson',
+    relationship: 'Spouse',
+    phone: '555-123-4567'
+  },
   goals: {
     dailySteps: 10000,
     sleepHours: 8,
@@ -258,3 +317,91 @@ export const mockMonthlyAverages = Array.from({ length: 6 }).map((_, index) => {
     healthScore: Math.floor(65 + 20 * improvementFactor),
   };
 }).reverse(); // Reverse to show oldest to newest
+
+// Generate mock notifications
+export const mockNotifications: Notification[] = [
+  {
+    id: uuidv4(),
+    title: 'Goal Achieved!',
+    message: 'Congratulations! You reached your daily step goal of 10,000 steps.',
+    type: 'success',
+    read: false,
+    date: subHours(new Date(), 2).toISOString(),
+    link: '/trends'
+  },
+  {
+    id: uuidv4(),
+    title: 'Device Battery Low',
+    message: 'Your Apple Watch battery is below 20%. Please charge it soon.',
+    type: 'warning',
+    read: false,
+    date: subHours(new Date(), 5).toISOString(),
+    link: '/devices'
+  },
+  {
+    id: uuidv4(),
+    title: 'New Insight Available',
+    message: 'We\'ve analyzed your sleep patterns and have a new recommendation for you.',
+    type: 'info',
+    read: true,
+    date: subDays(new Date(), 1).toISOString(),
+    link: '/insights'
+  },
+  {
+    id: uuidv4(),
+    title: 'Stress Level Alert',
+    message: 'Your stress level has been elevated for the past 3 days. Consider some relaxation techniques.',
+    type: 'alert',
+    read: true,
+    date: subDays(new Date(), 2).toISOString(),
+    link: '/insights'
+  },
+  {
+    id: uuidv4(),
+    title: 'Weekly Report Ready',
+    message: 'Your weekly health summary is now available. Check it out to see your progress!',
+    type: 'info',
+    read: true,
+    date: subDays(new Date(), 3).toISOString()
+  },
+  {
+    id: uuidv4(),
+    title: 'Device Disconnected',
+    message: 'Your Oura Ring has been disconnected for 5 days. Reconnect it to continue tracking your health.',
+    type: 'warning',
+    read: true,
+    date: subDays(new Date(), 4).toISOString(),
+    link: '/devices'
+  },
+  {
+    id: uuidv4(),
+    title: 'Heart Rate Anomaly',
+    message: 'We detected an unusual heart rate pattern yesterday. Consider consulting with your doctor if this continues.',
+    type: 'alert',
+    read: true,
+    date: subDays(new Date(), 1).toISOString()
+  }
+];
+
+// Default user settings
+export const defaultUserSettings: UserSettings = {
+  notifications: {
+    email: true,
+    push: true,
+    sms: false
+  },
+  privacy: {
+    shareData: false,
+    anonymousAnalytics: true
+  },
+  display: {
+    darkMode: false,
+    compactView: false,
+    theme: 'oceanic'
+  },
+  units: {
+    distance: 'km',
+    weight: 'kg',
+    temperature: 'c'
+  }
+};

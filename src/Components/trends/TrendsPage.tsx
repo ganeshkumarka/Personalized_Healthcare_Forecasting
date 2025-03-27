@@ -13,10 +13,11 @@ import {
   ComposedChart,
   Area
 } from 'recharts';
-import { format, parseISO, subDays } from 'date-fns';
+import { format, parseISO} from 'date-fns';
 import { mockTrendData, mockMonthlyAverages } from '../../data/mockData';
 import { TrendData } from '../../types';
-import { Calendar, TrendingUp, BarChart2, Clock, Filter } from 'lucide-react';
+import { Calendar, TrendingUp, BarChart2 } from 'lucide-react';
+import MultiChartComparison from './MultiChartComparison';
 
 const TrendsPage: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'7d' | '14d' | '30d'>('7d');
@@ -114,6 +115,8 @@ const TrendsPage: React.FC = () => {
   
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6"></h1>
+      
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">Health Trends</h1>
         
@@ -266,6 +269,10 @@ const TrendsPage: React.FC = () => {
             />
           </LineChart>
         </ResponsiveContainer>
+      </div>
+      
+      <div className="mb-8">
+        <MultiChartComparison />
       </div>
       
       {/* Monthly Averages */}

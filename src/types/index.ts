@@ -1,3 +1,5 @@
+import { ColorScheme } from '../styles/colorSchemes';
+
 export interface HealthData {
   id: number;
   date: string;
@@ -31,6 +33,16 @@ export interface UserProfile {
   age: number;
   weight: number;
   height: number;
+  gender?: 'male' | 'female' | 'other' | 'prefer-not-to-say';
+  birthdate?: string;
+  bloodType?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | 'unknown';
+  medicalConditions?: string[];
+  allergies?: string[];
+  emergencyContact?: {
+    name: string;
+    relationship: string;
+    phone: string;
+  };
   goals: {
     dailySteps: number;
     sleepHours: number;
@@ -73,4 +85,36 @@ export interface MonthlyAverage {
   avgCaloriesBurned: number;
   avgStressLevel: number;
   healthScore: number;
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'success' | 'alert';
+  read: boolean;
+  date: string;
+  link?: string;
+}
+
+export interface UserSettings {
+  notifications: {
+    email: boolean;
+    push: boolean;
+    sms: boolean;
+  };
+  privacy: {
+    shareData: boolean;
+    anonymousAnalytics: boolean;
+  };
+  display: {
+    darkMode: boolean;
+    compactView: boolean;
+    theme: ColorScheme;
+  };
+  units: {
+    distance: 'km' | 'mi';
+    weight: 'kg' | 'lb';
+    temperature: 'c' | 'f';
+  };
 }

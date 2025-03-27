@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables
+.env
+.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+ml/Fitabase_Data/
+ml/gboost_model.pkl
+ml/rnn_model.h5
