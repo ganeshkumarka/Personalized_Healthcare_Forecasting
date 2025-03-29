@@ -143,6 +143,9 @@ export class HealthForecastModel {
     predictedSleepHours = Math.max(4, Math.min(10, Number(predictedSleepHours.toFixed(1))));
     predictedStressLevel = Math.max(1, Math.min(5, Number(predictedStressLevel.toFixed(1))));
 
+    // Calculate predicted calories burned (example formula: steps * 0.04)
+    const predictedCaloriesBurned = Math.round(predictedSteps * 0.04);
+
     // Calculate health score based on the predicted metrics
     const healthScore = this.calculateHealthScore(
       predictedSteps, 
@@ -157,6 +160,7 @@ export class HealthForecastModel {
       predictedSteps,
       predictedHeartRate,
       predictedSleepHours,
+      predictedCaloriesBurned,
       predictedStressLevel
     };
   }
